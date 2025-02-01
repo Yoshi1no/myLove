@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Музыкальный плеер</title>
+  <link rel="stylesheet" href="yes_style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f1e3d3;
+      margin: 0;
+      padding: 20px;
+    }
+    .player-container {
+      background: rgb(111, 177, 240);
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      margin: 20px auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    .btn {
+      background-color: #FFB6C1;
+      color: white;
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #FAF9F6;
+      color: #FFB6C1;
+    }
+    .track-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 10px;
+      text-align: left;
+    }
+    .track {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+    .track:hover {
+      background: #e0e0e0;
+    }
+    .playing {
+      font-weight: bold;
+      color: #ff4081;
+    }
+    audio {
+      width: 100%;
+      margin-top: 10px;
+      background-color: #78adf1;
+    }
+    /* Класс для падающих изображений */
+    .falling-image {
+      position: absolute;
+      width: 200px;  /* можно изменить размер изображения */
+      height: auto;
+      animation: fall 5s linear forwards;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      0% {
+        top: -100px;
+        opacity: 1;
+      }
+      100% {
+        top: calc(100vh - 100px); /* нижняя граница: высота окна минус высота изображения */
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="header_text">Мен сенi суйемын!!</h1>
+  
+  <div class="gif_container">
+    <img src="https://media.tenor.com/Dk0e09DFNzYAAAAC/love-want-hug.gif" alt="GIF">
+  </div>
+
+  <div class="player-container">
+    <h2>🎵 Wife's favorite songs 🎵</h2>
+    <audio id="audio-player" controls></audio>
+    <div class="controls">
+      <button class="btn" id="pauseBtn">Pause</button>
+      <button class="btn" id="repeatBtn">Repeat</button>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+    <div class="track-list" id="track-list">
+      <!-- Список песен будет загружаться сюда -->
+    </div>
+  </div>
+
+  <script>
+    // Плейлист песен
+    const playlist = [
+    { title: "Сүйемін", src: "music/madeniyett-beinen-bejne_(muzzona.kz).mp3" },
+  { title: "Alan Walker - Where are you now (Faded)", src: "music/Alan Walker - Where are you now (Faded).mp3" },
+  { title: "Britney Spears - Criminal", src: "music/Britney Spears - Criminal.mp3" },
+  { title: "Chase Atlantic - Moonlight", src: "music/Chase Atlantic-Moonlight.mp3" },
+  { title: "DEAD BLONDE - Всего лишь друг", src: "music/DEAD BLONDE-Всего лишь друг.mp3" },
+  { title: "Dutch Melrose - PRETTY PLEASE (feat. benny mayne)", src: "music/Dutch Melrose - PRETTY PLEASE (feat. benny mayne).mp3" },
+  { title: "Elley Duhé - MIDDLE OF THE NIGHT", src: "music/Elley Duhé-MIDDLE OF THE NIGHT.mp3" },
+  { title: "Filatov & Karas feat. Masha - Лирика", src: "music/Filatov   Karas feat. Masha-Лирика (feat. Masha).mp3" },
+  { title: "Ghost - Mary On A Cross", src: "music/Ghost-Mary On A Cross.mp3" },
+  { title: "Griffinilla - Hard Drive", src: "music/Griffinilla - Hard Drive.mp3" },
+  { title: "Nickelback - How You Remind Me", src: "music/How You Remind Me - Nickelback.mp3" },
+  { title: "Avril Lavigne - I miss you", src: "music/I miss you - Avril Lavigne.mp3" },
+  { title: "Keendy - Не более", src: "music/Keendy - Не более.mp3" },
+  { title: "Kylie Minogue - Giving You Up", src: "music/Kylie Minogue - Giving You Up.mp3" },
+  { title: "Lady Gaga feat. Bruno Mars - Die With A Smile", src: "music/Lady Gaga feat. Bruno Mars - Die With A Smile.mp3" },
+  { title: "Indila - Love Story", src: "music/Love Story - Indila.mp3" },
+  { title: "Lx24 - Танцы под луной", src: "music/Lx24-Танцы под луной.mp3" },
+  { title: "Random Hero - Could You Be My Love", src: "music/Random Hero - Could You Be My Love.mp3" },
+  { title: "Stromae - Ma Meilleure Ennemie", src: "music/Stromae_Ma_Meilleure_Ennemie_from_the_series_Arcane_League_of.mp3" },
+  { title: "The Cab - Endlessly", src: "music/The Cab - Endlessly.mp3" },
+  { title: "The Neighbourhood ft. Syd remix - Daddy issues", src: "music/The Neighbourhood ft. Syd remix-Daddy issues.mp3" },
+  { title: "Vanessa Paradis, -M- - La Seine", src: "music/Vanessa Paradis, -M--La Seine.mp3" },
+  { title: "Oasis - Wonderwall", src: "music/Wonderwall - Oasis.mp3" },
+  { title: "Женя Трофимов, Комната культуры - Поезда", src: "music/Женя_Трофимов,_Комната_культуры_Поезда.mp3" },
+  { title: "Лоя - Звёзды", src: "music/Звёзды - Лоя.mp3" },
+  { title: "JONY Andro - Мадам", src: "music/Мадам - JONY Andro.mp3" },
+  { title: "Мария Чайковская - Люблю (remix)", src: "music/Мария Чайковская - Люблю (remix ).mp3" },
+  { title: "Миша Марвин - Признание (OST Леонардо Миссия Мона Лиза)", src: "music/Миша_Марвин_Признание_OST_Леонардо_Миссия_Мона_Лиза.mp3" },
+  { title: "Homie - Моя искра", src: "music/Моя искра - Homie.mp3" },
+  { title: "Секрет - Моя любовь на пятом этаже", src: "music/Моя_любовь_на_пятом_этаже_Секрет.mp3" },
+  { title: "ОЛЬГА РОМАНОВСКАЯ - ДЕРЖИ МЕНЯ КРЕПЧЕ", src: "music/ОЛЬГА_РОМАНОВСКАЯ_ДЕРЖИ_МЕНЯ_КРЕПЧЕ.mp3" },
+  { title: "парадокс - тёмно-алая кровь", src: "music/парадокс-тёмно-алая кровь.mp3" },
+  { title: "Перемотка - Как тебя покорить", src: "music/Перемотка-Как тебя покорить.mp3" },
+  { title: "Световое шоу - Пожар - МЫ", src: "music/Световое шоу - Пожар - МЫ.mp3" },
+  { title: "ASAMMUELL - Сердце не игрушка", src: "music/Сердце не игрушка - ASAMMUELL.mp3" },
+  { title: "CMH Lida - СТИКЕР", src: "music/СТИКЕР - CMH Lida.mp3" },
+  { title: "Щвец Алена - Первое Свидание", src: "music/Щвец Алена-Первое Свидание.mp3" },
+  { title: "Баста feat. Алёна Омаргалиева - Я поднимаюсь над землей", src: "music/Я_поднимаюсь_над_землей_feat_Алёна_Омаргалиева_Баста_feat_Алё.mp3" }
+    ];
+
+    const audioPlayer = document.getElementById("audio-player");
+    const trackList = document.getElementById("track-list");
+
+    let currentTrackIndex = 0;
+
+    // Заполнение списка песен
+    playlist.forEach((track, index) => {
+      const trackItem = document.createElement("div");
+      trackItem.classList.add("track");
+      trackItem.textContent = track.title;
+      trackItem.dataset.index = index;
+      trackItem.addEventListener("click", () => playTrack(index));
+      trackList.appendChild(trackItem);
+    });
+
+    // Функция воспроизведения трека
+    function playTrack(index) {
+      currentTrackIndex = index;
+      audioPlayer.src = playlist[index].src;
+      audioPlayer.play();
+
+      // Обновление выделения активного трека
+      document.querySelectorAll(".track").forEach(el => el.classList.remove("playing"));
+      trackList.children[index].classList.add("playing");
+    }
+
+    // Функция для паузы
+    function pauseTrack() {
+      audioPlayer.pause();
+    }
+
+    // Функция для повтора текущего трека
+    function repeatTrack() {
+      audioPlayer.currentTime = 0;
+      audioPlayer.play();
+    }
+
+    // Функция для перехода к следующему треку
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+      playTrack(currentTrackIndex);
+    }
+
+    // Обработчики кнопок
+    document.getElementById("pauseBtn").addEventListener("click", pauseTrack);
+    document.getElementById("repeatBtn").addEventListener("click", repeatTrack);
+    document.getElementById("nextBtn").addEventListener("click", nextTrack);
+
+    // Автоматический переход к следующему треку, когда предыдущий заканчивается
+    audioPlayer.addEventListener("ended", nextTrack);
+
+    // Запуск первого трека
+    playTrack(0);
+    // Массив с URL изображений
+    const images = [
+      "https://i.pinimg.com/originals/34/44/85/34448583290eb3b5ebb0a8699847ed21.gif",
+      "https://i.pinimg.com/originals/fb/57/0f/fb570f1233bbb266794d87dbc0f53d47.gif",
+      "https://i.pinimg.com/originals/86/59/2b/86592b3baa46ba35b6ca9c9452e773a6.gif",
+        "https://media.tenor.com/9KuZSu7zdkgAAAAC/peachcat-catsleep.gif",
+        "https://media1.tenor.com/m/Gpt3yc61IpkAAAAC/tkthao219-bubududu.gif",
+        "https://i.pinimg.com/originals/19/f8/64/19f8645fa3dc424ab75cd5a9b152f40e.gif",
+
+      
+    ];
+
+    // Переменная для хранения последнего выбранного индекса
+    let lastIndex = -1;
+
+    // Функция для создания и добавления изображения на страницу
+    function createFallingImage() {
+      // Выбираем случайный индекс, отличающийся от последнего
+      let index;
+      do {
+        index = Math.floor(Math.random() * images.length);
+      } while (index === lastIndex && images.length > 1);
+      lastIndex = index;
+      
+      // Создаем элемент изображения
+      const img = document.createElement('img');
+      img.src = images[index];
+      img.classList.add('falling-image');
+
+      // Вычисляем случайную горизонтальную позицию так, чтобы изображение не выходило за пределы окна.
+      const maxLeft = window.innerWidth - 100; // 100px - ширина изображения
+      img.style.left = Math.random() * maxLeft + "px";
+
+      document.body.appendChild(img);
+
+      // Удаляем изображение после завершения анимации (5 секунд)
+      setTimeout(() => {
+        img.remove();
+      }, 5000);
+    }
+
+    // Каждые 3 секунды создаем новое падающее изображение
+    setInterval(createFallingImage, 2000);
+  </script>
+  </script>
+
+</body>
+</html>
